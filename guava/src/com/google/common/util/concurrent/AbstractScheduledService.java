@@ -19,7 +19,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateCancelledFuture;
 import static com.google.common.util.concurrent.Internal.toNanosSaturated;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static com.google.common.util.concurrent.Platform.restoreInterruptIfIsInterruptedException;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Supplier;
@@ -128,7 +130,7 @@ public abstract class AbstractScheduledService implements Service {
      */
     public static Scheduler newFixedDelaySchedule(Duration initialDelay, Duration delay) {
       return newFixedDelaySchedule(
-          toNanosSaturated(initialDelay), toNanosSaturated(delay), TimeUnit.NANOSECONDS);
+          toNanosSaturated(initialDelay), toNanosSaturated(delay), NANOSECONDS);
     }
 
     /**
@@ -165,7 +167,7 @@ public abstract class AbstractScheduledService implements Service {
      */
     public static Scheduler newFixedRateSchedule(Duration initialDelay, Duration period) {
       return newFixedRateSchedule(
-          toNanosSaturated(initialDelay), toNanosSaturated(period), TimeUnit.NANOSECONDS);
+          toNanosSaturated(initialDelay), toNanosSaturated(period), NANOSECONDS);
     }
 
     /**
@@ -231,9 +233,11 @@ public abstract class AbstractScheduledService implements Service {
           }
           AbstractScheduledService.this.runOneIteration();
         } catch (Throwable t) {
+          restoreInterruptIfIsInterruptedException(t);
           try {
             shutDown();
           } catch (Exception ignored) {
+            restoreInterruptIfIsInterruptedException(ignored);
             logger.log(
                 Level.WARNING,
                 "Error while attempting to shut down the service after failure.",
@@ -271,6 +275,7 @@ public abstract class AbstractScheduledService implements Service {
                 runningTask = scheduler().schedule(delegate, executorService, task);
                 notifyStarted();
               } catch (Throwable t) {
+                restoreInterruptIfIsInterruptedException(t);
                 notifyFailed(t);
                 if (runningTask != null) {
                   // prevent the task from running if possible
@@ -309,6 +314,7 @@ public abstract class AbstractScheduledService implements Service {
                 }
                 notifyStopped();
               } catch (Throwable t) {
+                restoreInterruptIfIsInterruptedException(t);
                 notifyFailed(t);
               }
             }
@@ -594,6 +600,7 @@ public abstract class AbstractScheduledService implements Service {
         try {
           schedule = CustomScheduler.this.getNextSchedule();
         } catch (Throwable t) {
+          restoreInterruptIfIsInterruptedException(t);
           service.notifyFailed(t);
           return new FutureAsCancellable(immediateCancelledFuture());
         }
@@ -606,7 +613,7 @@ public abstract class AbstractScheduledService implements Service {
         lock.lock();
         try {
           toReturn = initializeOrUpdateCancellationDelegate(schedule);
-        } catch (Throwable e) {
+        } catch (RuntimeException | Error e) {
           // If an exception is thrown by the subclass then we need to make sure that the service
           // notices and transitions to the FAILED state. We do it by calling notifyFailed directly
           // because the service does not monitor the state of the future so if the exception is not
@@ -721,6 +728,14 @@ public abstract class AbstractScheduledService implements Service {
       public Schedule(long delay, TimeUnit unit) {
         this.delay = delay;
         this.unit = checkNotNull(unit);
+      }
+
+      /**
+       * @param delay the time from now to delay execution
+       * @since 31.1
+       */
+      public Schedule(Duration delay) {
+        this(toNanosSaturated(delay), NANOSECONDS);
       }
     }
 

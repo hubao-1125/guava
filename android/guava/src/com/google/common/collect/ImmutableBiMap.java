@@ -23,6 +23,8 @@ import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.DoNotCall;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -448,9 +450,29 @@ public abstract class ImmutableBiMap<K, V> extends ImmutableMap<K, V> implements
       if (size == 0) {
         return of();
       }
-      sortEntries();
+      if (valueComparator != null) {
+        if (entriesUsed) {
+          alternatingKeysAndValues = Arrays.copyOf(alternatingKeysAndValues, 2 * size);
+        }
+        sortEntries(alternatingKeysAndValues, size, valueComparator);
+      }
       entriesUsed = true;
       return new RegularImmutableBiMap<K, V>(alternatingKeysAndValues, size);
+    }
+
+    /**
+     * Throws {@link UnsupportedOperationException}. This method is inherited from {@link
+     * ImmutableMap.Builder}, but it does not make sense for bimaps.
+     *
+     * @throws UnsupportedOperationException always
+     * @deprecated This method does not make sense for bimaps and should not be called.
+     * @since 31.1
+     */
+    @DoNotCall
+    @Deprecated
+    @Override
+    public ImmutableBiMap<K, V> buildKeepingLast() {
+      throw new UnsupportedOperationException("Not supported for bimaps");
     }
   }
 
@@ -565,5 +587,9 @@ public abstract class ImmutableBiMap<K, V> extends ImmutableMap<K, V> implements
   @Override
   Object writeReplace() {
     return new SerializedForm<>(this);
+  }
+
+  private void readObject(ObjectInputStream stream) throws InvalidObjectException {
+    throw new InvalidObjectException("Use SerializedForm");
   }
 }

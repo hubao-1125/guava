@@ -32,11 +32,11 @@ import static com.google.common.util.concurrent.Futures.getDone;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.Futures.nonCancellationPropagating;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static com.google.common.util.concurrent.Platform.restoreInterruptIfIsInterruptedException;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
@@ -190,7 +190,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @since 30.0
  */
 // TODO(dpb): Consider reusing one CloseableList for the entire pipeline, modulo combinations.
-@Beta // @Beta for one release.
 @DoNotMock("Use ClosingFuture.from(Futures.immediate*Future)")
 @ElementTypesAreNonnullByDefault
 // TODO(dpb): GWT compatibility.
@@ -2171,6 +2170,7 @@ public final class ClosingFuture<V extends @Nullable Object> {
               try {
                 closeable.close();
               } catch (Exception e) {
+                restoreInterruptIfIsInterruptedException(e);
                 logger.log(WARNING, "thrown by close()", e);
               }
             }

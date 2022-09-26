@@ -79,7 +79,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * and {@link Queues}.
  *
  * <p>See the Guava User Guide article on <a href=
- * "https://github.com/google/guava/wiki/CollectionUtilitiesExplained#maps"> {@code Maps}</a>.
+ * "https://github.com/google/guava/wiki/CollectionUtilitiesExplained#maps">{@code Maps}</a>.
  *
  * @author Kevin Bourrillion
  * @author Mike Bostock
@@ -228,9 +228,9 @@ public final class Maps {
    *
    * <p><b>Note:</b> if {@code K} is an {@code enum} type, use {@link #newEnumMap} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code HashMap} constructor directly, taking advantage of the new
-   * <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code HashMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @return a new, empty {@code HashMap}
    */
@@ -246,9 +246,9 @@ public final class Maps {
    *
    * <p><b>Note:</b> if {@code K} is an {@link Enum} type, use {@link #newEnumMap} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code HashMap} constructor directly, taking advantage of the new
-   * <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code HashMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @param map the mappings to be placed in the new map
    * @return a new {@code HashMap} initialized with the mappings from {@code map}
@@ -284,10 +284,19 @@ public final class Maps {
       return expectedSize + 1;
     }
     if (expectedSize < Ints.MAX_POWER_OF_TWO) {
-      // This is the calculation used in JDK8 to resize when a putAll
-      // happens; it seems to be the most conservative calculation we
-      // can make.  0.75 is the default load factor.
-      return (int) ((float) expectedSize / 0.75F + 1.0F);
+      // This seems to be consistent across JDKs. The capacity argument to HashMap and LinkedHashMap
+      // ends up being used to compute a "threshold" size, beyond which the internal table
+      // will be resized. That threshold is ceilingPowerOfTwo(capacity*loadFactor), where
+      // loadFactor is 0.75 by default. So with the calculation here we ensure that the
+      // threshold is equal to ceilingPowerOfTwo(expectedSize). There is a separate code
+      // path when the first operation on the new map is putAll(otherMap). There, prior to
+      // https://github.com/openjdk/jdk/commit/3e393047e12147a81e2899784b943923fc34da8e, a bug
+      // meant that sometimes a too-large threshold is calculated. However, this new threshold is
+      // independent of the initial capacity, except that it won't be lower than the threshold
+      // computed from that capacity. Because the internal table is only allocated on the first
+      // write, we won't see copying because of the new threshold. So it is always OK to use the
+      // calculation here.
+      return (int) Math.ceil(expectedSize / 0.75);
     }
     return Integer.MAX_VALUE; // any large value
   }
@@ -297,9 +306,9 @@ public final class Maps {
    *
    * <p><b>Note:</b> if mutability is not required, use {@link ImmutableMap#of()} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code LinkedHashMap} constructor directly, taking advantage of
-   * the new <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code LinkedHashMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @return a new, empty {@code LinkedHashMap}
    */
@@ -314,9 +323,9 @@ public final class Maps {
    *
    * <p><b>Note:</b> if mutability is not required, use {@link ImmutableMap#copyOf(Map)} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code LinkedHashMap} constructor directly, taking advantage of
-   * the new <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code LinkedHashMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @param map the mappings to be placed in the new map
    * @return a new, {@code LinkedHashMap} initialized with the mappings from {@code map}
@@ -358,9 +367,9 @@ public final class Maps {
    *
    * <p><b>Note:</b> if mutability is not required, use {@link ImmutableSortedMap#of()} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code TreeMap} constructor directly, taking advantage of the new
-   * <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code TreeMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @return a new, empty {@code TreeMap}
    */
@@ -375,9 +384,9 @@ public final class Maps {
    * <p><b>Note:</b> if mutability is not required, use {@link
    * ImmutableSortedMap#copyOfSorted(SortedMap)} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code TreeMap} constructor directly, taking advantage of the new
-   * <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code TreeMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @param map the sorted map whose mappings are to be placed in the new map and whose comparator
    *     is to be used to sort the new map
@@ -395,9 +404,9 @@ public final class Maps {
    * <p><b>Note:</b> if mutability is not required, use {@code
    * ImmutableSortedMap.orderedBy(comparator).build()} instead.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code TreeMap} constructor directly, taking advantage of the new
-   * <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code TreeMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @param comparator the comparator to sort the keys with
    * @return a new, empty {@code TreeMap}
@@ -426,9 +435,9 @@ public final class Maps {
   /**
    * Creates an {@code EnumMap} with the same mappings as the specified map.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code EnumMap} constructor directly, taking advantage of the new
-   * <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code EnumMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @param map the map from which to initialize this {@code EnumMap}
    * @return a new {@code EnumMap} initialized with the mappings from {@code map}
@@ -443,9 +452,9 @@ public final class Maps {
   /**
    * Creates an {@code IdentityHashMap} instance.
    *
-   * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and should be treated as
-   * deprecated. Instead, use the {@code IdentityHashMap} constructor directly, taking advantage of
-   * the new <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
+   * <p><b>Note:</b> this method is now unnecessary and should be treated as deprecated. Instead,
+   * use the {@code IdentityHashMap} constructor directly, taking advantage of <a
+   * href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
    *
    * @return a new, empty {@code IdentityHashMap}
    */
@@ -575,7 +584,20 @@ public final class Maps {
     onlyOnRight.putAll(right); // will whittle it down
     SortedMap<K, V> onBoth = Maps.newTreeMap(comparator);
     SortedMap<K, MapDifference.ValueDifference<V>> differences = Maps.newTreeMap(comparator);
-    doDifference(left, right, Equivalence.equals(), onlyOnLeft, onlyOnRight, onBoth, differences);
+
+    /*
+     * V is a possibly nullable type, but we decided to declare Equivalence with a type parameter
+     * that is restricted to non-nullable types. Still, this code is safe: We made that decision
+     * about Equivalence not because Equivalence is null-hostile but because *every* Equivalence can
+     * handle null inputs -- and thus it would be meaningless for the type system to distinguish
+     * between "an Equivalence for nullable Foo" and "an Equivalence for non-nullable Foo."
+     *
+     * (And the unchecked cast is safe because Equivalence is contravariant.)
+     */
+    @SuppressWarnings({"nullness", "unchecked"})
+    Equivalence<V> equalsEquivalence = (Equivalence<V>) Equivalence.equals();
+
+    doDifference(left, right, equalsEquivalence, onlyOnLeft, onlyOnRight, onBoth, differences);
     return new SortedMapDifferenceImpl<>(onlyOnLeft, onlyOnRight, onBoth, differences);
   }
 
@@ -1296,13 +1318,13 @@ public final class Maps {
   public static <K, V> ImmutableMap<K, V> toMap(
       Iterator<K> keys, Function<? super K, V> valueFunction) {
     checkNotNull(valueFunction);
-    // Using LHM instead of a builder so as not to fail on duplicate keys
-    Map<K, V> builder = newLinkedHashMap();
+    ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
     while (keys.hasNext()) {
       K key = keys.next();
       builder.put(key, valueFunction.apply(key));
     }
-    return ImmutableMap.copyOf(builder);
+    // Using buildKeepingLast() so as not to fail on duplicate keys
+    return builder.buildKeepingLast();
   }
 
   /**
@@ -1336,7 +1358,12 @@ public final class Maps {
   @CanIgnoreReturnValue
   public static <K, V> ImmutableMap<K, V> uniqueIndex(
       Iterable<V> values, Function<? super V, K> keyFunction) {
-    // TODO(lowasser): consider presizing the builder if values is a Collection
+    if (values instanceof Collection) {
+      return uniqueIndex(
+          values.iterator(),
+          keyFunction,
+          ImmutableMap.builderWithExpectedSize(((Collection<?>) values).size()));
+    }
     return uniqueIndex(values.iterator(), keyFunction);
   }
 
@@ -1372,14 +1399,18 @@ public final class Maps {
   @CanIgnoreReturnValue
   public static <K, V> ImmutableMap<K, V> uniqueIndex(
       Iterator<V> values, Function<? super V, K> keyFunction) {
+    return uniqueIndex(values, keyFunction, ImmutableMap.builder());
+  }
+
+  private static <K, V> ImmutableMap<K, V> uniqueIndex(
+      Iterator<V> values, Function<? super V, K> keyFunction, ImmutableMap.Builder<K, V> builder) {
     checkNotNull(keyFunction);
-    ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
     while (values.hasNext()) {
       V value = values.next();
       builder.put(keyFunction.apply(value), value);
     }
     try {
-      return builder.build();
+      return builder.buildOrThrow();
     } catch (IllegalArgumentException duplicateKeys) {
       throw new IllegalArgumentException(
           duplicateKeys.getMessage()
@@ -1432,7 +1463,7 @@ public final class Maps {
       builder.put(key, requireNonNull(properties.getProperty(key)));
     }
 
-    return builder.build();
+    return builder.buildOrThrow();
   }
 
   /**
@@ -1701,6 +1732,57 @@ public final class Maps {
     @Override
     @CheckForNull
     public V forcePut(@ParametricNullness K key, @ParametricNullness V value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @CheckForNull
+    public V putIfAbsent(K key, V value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean remove(@Nullable Object key, @Nullable Object value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @CheckForNull
+    public V replace(K key, V value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V computeIfAbsent(
+        K key, java.util.function.Function<? super K, ? extends V> mappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V computeIfPresent(
+        K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V compute(
+        K key, BiFunction<? super K, ? super @Nullable V, ? extends V> remappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V merge(
+        K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
       throw new UnsupportedOperationException();
     }
 
@@ -3558,6 +3640,57 @@ public final class Maps {
       throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @CheckForNull
+    public V putIfAbsent(K key, V value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean remove(@Nullable Object key, @Nullable Object value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @CheckForNull
+    public V replace(K key, V value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V computeIfAbsent(
+        K key, java.util.function.Function<? super K, ? extends V> mappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V computeIfPresent(
+        K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V compute(
+        K key, BiFunction<? super K, ? super @Nullable V, ? extends V> remappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public V merge(
+        K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+      throw new UnsupportedOperationException();
+    }
+
     @CheckForNull private transient UnmodifiableNavigableMap<K, V> descendingMap;
 
     @Override
@@ -4476,7 +4609,7 @@ public final class Maps {
     for (E e : list) {
       builder.put(e, i++);
     }
-    return builder.build();
+    return builder.buildOrThrow();
   }
 
   /**

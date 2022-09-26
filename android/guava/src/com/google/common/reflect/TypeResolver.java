@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Arrays.asList;
 
-import com.google.common.annotations.Beta;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
@@ -51,7 +50,6 @@ import javax.annotation.CheckForNull;
  * @author Ben Yu
  * @since 15.0
  */
-@Beta
 @ElementTypesAreNonnullByDefault
 public final class TypeResolver {
 
@@ -296,7 +294,7 @@ public final class TypeResolver {
         checkArgument(!variable.equalsType(type), "Type variable %s bound to itself", variable);
         builder.put(variable, type);
       }
-      return new TypeTable(builder.build());
+      return new TypeTable(builder.buildOrThrow());
     }
 
     final Type resolve(TypeVariable<?> var) {

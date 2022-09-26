@@ -19,7 +19,6 @@ package com.google.common.testing;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Converter;
 import com.google.common.base.Objects;
@@ -33,6 +32,7 @@ import com.google.common.reflect.Invokable;
 import com.google.common.reflect.Parameter;
 import com.google.common.reflect.Reflection;
 import com.google.common.reflect.TypeToken;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
@@ -68,7 +68,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @author Kevin Bourrillion
  * @since 10.0
  */
-@Beta
 @GwtIncompatible
 public final class NullPointerTester {
 
@@ -81,6 +80,7 @@ public final class NullPointerTester {
    * Sets a default value that can be used for any parameter of type {@code type}. Returns this
    * object.
    */
+  @CanIgnoreReturnValue
   public <T> NullPointerTester setDefault(Class<T> type, T value) {
     defaults.putInstance(type, checkNotNull(value));
     return this;
@@ -91,6 +91,7 @@ public final class NullPointerTester {
    *
    * @since 13.0
    */
+  @CanIgnoreReturnValue
   public NullPointerTester ignore(Method method) {
     ignoredMembers.add(checkNotNull(method));
     return this;
@@ -101,6 +102,7 @@ public final class NullPointerTester {
    *
    * @since 22.0
    */
+  @CanIgnoreReturnValue
   public NullPointerTester ignore(Constructor<?> constructor) {
     ignoredMembers.add(checkNotNull(constructor));
     return this;

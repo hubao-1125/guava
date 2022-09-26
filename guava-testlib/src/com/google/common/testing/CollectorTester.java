@@ -19,8 +19,8 @@ package com.google.common.testing;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static junit.framework.Assert.assertTrue;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +46,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @author Louis Wasserman
  * @since 21.0
  */
-@Beta
 @GwtCompatible
 public final class CollectorTester<T, A, R> {
   /**
@@ -140,6 +139,7 @@ public final class CollectorTester<T, A, R> {
    * inputs, regardless of how the elements are divided.
    */
   @SafeVarargs
+  @CanIgnoreReturnValue
   public final CollectorTester<T, A, R> expectCollects(@Nullable R expectedResult, T... inputs) {
     List<T> list = Arrays.asList(inputs);
     doExpectCollects(expectedResult, list);

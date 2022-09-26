@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
@@ -36,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Immutable;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.nio.charset.Charset;
@@ -70,7 +70,6 @@ import javax.annotation.CheckForNull;
  * @since 12.0
  * @author Gregory Kick
  */
-@Beta
 @GwtCompatible
 @Immutable
 @ElementTypesAreNonnullByDefault
@@ -491,6 +490,13 @@ public final class MediaType {
   public static final MediaType JOSE_JSON = createConstant(APPLICATION_TYPE, "jose+json");
 
   public static final MediaType JSON_UTF_8 = createConstantUtf8(APPLICATION_TYPE, "json");
+
+  /**
+   * For <a href="https://tools.ietf.org/html/7519">JWT objects using the compact Serialization</a>.
+   *
+   * @since NEXT
+   */
+  public static final MediaType JWT = createConstant(APPLICATION_TYPE, "jwt");
 
   /**
    * The <a href="http://www.w3.org/TR/appmanifest/">Manifest for a web application</a>.
@@ -1040,6 +1046,7 @@ public final class MediaType {
    *
    * @throws IllegalArgumentException if the input is not parsable
    */
+  @CanIgnoreReturnValue // TODO(b/219820829): consider removing
   public static MediaType parse(String input) {
     checkNotNull(input);
     Tokenizer tokenizer = new Tokenizer(input);
@@ -1087,6 +1094,7 @@ public final class MediaType {
       this.input = input;
     }
 
+    @CanIgnoreReturnValue
     String consumeTokenIfPresent(CharMatcher matcher) {
       checkState(hasMore());
       int startPosition = position;
@@ -1109,6 +1117,7 @@ public final class MediaType {
       return c;
     }
 
+    @CanIgnoreReturnValue
     char consumeCharacter(char c) {
       checkState(hasMore());
       checkState(previewChar() == c);

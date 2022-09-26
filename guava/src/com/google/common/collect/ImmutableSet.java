@@ -29,6 +29,8 @@ import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import com.google.j2objc.annotations.RetainedWith;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -423,6 +425,10 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
     return new SerializedForm(toArray());
   }
 
+  private void readObject(ObjectInputStream stream) throws InvalidObjectException {
+    throw new InvalidObjectException("Use SerializedForm");
+  }
+
   /**
    * Returns a new builder. The generated builder is equivalent to the builder created by the {@link
    * Builder} constructor.
@@ -549,6 +555,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
       return this;
     }
 
+    @CanIgnoreReturnValue
     Builder<E> combine(Builder<E> other) {
       requireNonNull(impl);
       requireNonNull(other.impl);

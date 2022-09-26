@@ -18,7 +18,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.base.Ascii;
 import com.google.common.base.CharMatcher;
@@ -26,6 +25,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.Immutable;
 import com.google.thirdparty.publicsuffix.PublicSuffixPatterns;
 import com.google.thirdparty.publicsuffix.PublicSuffixType;
@@ -71,7 +71,6 @@ import javax.annotation.CheckForNull;
  * @author Catherine Berry
  * @since 5.0
  */
-@Beta
 @GwtCompatible(emulated = true)
 @Immutable
 @ElementTypesAreNonnullByDefault
@@ -206,6 +205,7 @@ public final class InternetDomainName {
    *     {@link #isValid}
    * @since 10.0 (previously named {@code fromLenient})
    */
+  @CanIgnoreReturnValue // TODO(b/219820829): consider removing
   public static InternetDomainName from(String domain) {
     return new InternetDomainName(checkNotNull(domain));
   }
@@ -584,7 +584,7 @@ public final class InternetDomainName {
    */
   public static boolean isValid(String name) {
     try {
-      from(name);
+      InternetDomainName unused = from(name);
       return true;
     } catch (IllegalArgumentException e) {
       return false;

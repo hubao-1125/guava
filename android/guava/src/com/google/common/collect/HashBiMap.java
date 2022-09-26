@@ -46,7 +46,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * <p>This implementation guarantees insertion-based iteration order of its keys.
  *
  * <p>See the Guava User Guide article on <a href=
- * "https://github.com/google/guava/wiki/NewCollectionTypesExplained#bimap"> {@code BiMap} </a>.
+ * "https://github.com/google/guava/wiki/NewCollectionTypesExplained#bimap">{@code BiMap} </a>.
  *
  * @author Louis Wasserman
  * @author Mike Bostock
@@ -749,7 +749,7 @@ public final class HashBiMap<K extends @Nullable Object, V extends @Nullable Obj
     }
   }
 
-  private transient Set<K> keySet;
+  @LazyInit private transient Set<K> keySet;
 
   @Override
   public Set<K> keySet() {
@@ -787,7 +787,7 @@ public final class HashBiMap<K extends @Nullable Object, V extends @Nullable Obj
     }
   }
 
-  private transient Set<V> valueSet;
+  @LazyInit private transient Set<V> valueSet;
 
   @Override
   public Set<V> values() {
@@ -825,7 +825,7 @@ public final class HashBiMap<K extends @Nullable Object, V extends @Nullable Obj
     }
   }
 
-  private transient Set<Entry<K, V>> entrySet;
+  @LazyInit private transient Set<Entry<K, V>> entrySet;
 
   @Override
   public Set<Entry<K, V>> entrySet() {

@@ -18,7 +18,6 @@ package com.google.common.testing;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.errorprone.annotations.DoNotMock;
 import com.google.j2objc.annotations.J2ObjCIncompatible;
@@ -103,7 +102,6 @@ import java.util.concurrent.TimeoutException;
  * @author Martin Buchholz
  * @since 11.0
  */
-@Beta
 @GwtIncompatible
 @J2ObjCIncompatible // gc
 public final class GcFinalization {
@@ -223,12 +221,13 @@ public final class GcFinalization {
    * separate method to make it somewhat more likely to be unreachable.
    */
   private static void createUnreachableLatchFinalizer(CountDownLatch latch) {
-    new Object() {
-      @Override
-      protected void finalize() {
-        latch.countDown();
-      }
-    };
+    Object unused =
+        new Object() {
+          @Override
+          protected void finalize() {
+            latch.countDown();
+          }
+        };
   }
 
   /**

@@ -172,7 +172,11 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @since 14.0
    */
   public static <V extends @Nullable Object> ListenableFuture<V> immediateCancelledFuture() {
-    return new ImmediateCancelledFuture<V>();
+    ListenableFuture<Object> instance = ImmediateCancelledFuture.INSTANCE;
+    if (instance != null) {
+      return (ListenableFuture<V>) instance;
+    }
+    return new ImmediateCancelledFuture<>();
   }
 
   /**
@@ -181,7 +185,6 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @since 28.2
    */
-  @Beta
   public static <O extends @Nullable Object> ListenableFuture<O> submit(
       Callable<O> callable, Executor executor) {
     TrustedListenableFutureTask<O> task = TrustedListenableFutureTask.create(callable);
@@ -196,7 +199,6 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @since 28.2
    */
-  @Beta
   public static ListenableFuture<@Nullable Void> submit(Runnable runnable, Executor executor) {
     TrustedListenableFutureTask<@Nullable Void> task =
         TrustedListenableFutureTask.create(runnable, null);
@@ -210,7 +212,6 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @since 23.0
    */
-  @Beta
   public static <O extends @Nullable Object> ListenableFuture<O> submitAsync(
       AsyncCallable<O> callable, Executor executor) {
     TrustedListenableFutureTask<O> task = TrustedListenableFutureTask.create(callable);
@@ -224,8 +225,8 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @since 28.0
    */
-  @Beta
   @GwtIncompatible // java.util.concurrent.ScheduledExecutorService
+  // TODO(cpovirk): Return ListenableScheduledFuture?
   public static <O extends @Nullable Object> ListenableFuture<O> scheduleAsync(
       AsyncCallable<O> callable, Duration delay, ScheduledExecutorService executorService) {
     return scheduleAsync(callable, toNanosSaturated(delay), TimeUnit.NANOSECONDS, executorService);
@@ -237,9 +238,9 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @since 23.0
    */
-  @Beta
   @GwtIncompatible // java.util.concurrent.ScheduledExecutorService
   @SuppressWarnings("GoodTime") // should accept a java.time.Duration
+  // TODO(cpovirk): Return ListenableScheduledFuture?
   public static <O extends @Nullable Object> ListenableFuture<O> scheduleAsync(
       AsyncCallable<O> callable,
       long delay,
@@ -548,7 +549,7 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
       private O applyTransformation(I input) throws ExecutionException {
         try {
           return function.apply(input);
-        } catch (Throwable t) {
+        } catch (RuntimeException | Error t) {
           throw new ExecutionException(t);
         }
       }
@@ -693,7 +694,6 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @since 20.0
    */
   @Beta
-  @CanIgnoreReturnValue // TODO(cpovirk): Consider removing, especially if we provide run(Runnable)
   @GwtCompatible
   public static final class FutureCombiner<V extends @Nullable Object> {
     private final boolean allMustSucceed;
@@ -718,6 +718,12 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
      * ExecutionException} that gets thrown by the returned combined future.
      *
      * <p>Canceling this future will attempt to cancel all the component futures.
+     *
+     * @return a future whose result is based on {@code combiner} (or based on the input futures
+     *     passed to {@code whenAllSucceed}, if that is the method you used to create this {@code
+     *     FutureCombiner}). Even if you don't care about the value of the future, you should
+     *     typically check whether it failed: See <a
+     *     href="https://errorprone.info/bugpattern/FutureReturnValueIgnored">https://errorprone.info/bugpattern/FutureReturnValueIgnored</a>.
      */
     public <C extends @Nullable Object> ListenableFuture<C> callAsync(
         AsyncCallable<C> combiner, Executor executor) {
@@ -737,8 +743,13 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
      * ExecutionException} that gets thrown by the returned combined future.
      *
      * <p>Canceling this future will attempt to cancel all the component futures.
+     *
+     * @return a future whose result is based on {@code combiner} (or based on the input futures
+     *     passed to {@code whenAllSucceed}, if that is the method you used to create this {@code
+     *     FutureCombiner}). Even if you don't care about the value of the future, you should
+     *     typically check whether it failed: See <a
+     *     href="https://errorprone.info/bugpattern/FutureReturnValueIgnored">https://errorprone.info/bugpattern/FutureReturnValueIgnored</a>.
      */
-    @CanIgnoreReturnValue // TODO(cpovirk): Remove this
     public <C extends @Nullable Object> ListenableFuture<C> call(
         Callable<C> combiner, Executor executor) {
       return new CombinedFuture<C>(futures, allMustSucceed, executor, combiner);
@@ -754,6 +765,11 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
      * <p>Canceling this Future will attempt to cancel all the component futures.
      *
      * @since 23.6
+     * @return a future whose result is based on {@code combiner} (or based on the input futures
+     *     passed to {@code whenAllSucceed}, if that is the method you used to create this {@code
+     *     FutureCombiner}). Even though the future never produces a value other than {@code null},
+     *     you should typically check whether it failed: See <a
+     *     href="https://errorprone.info/bugpattern/FutureReturnValueIgnored">https://errorprone.info/bugpattern/FutureReturnValueIgnored</a>.
      */
     public ListenableFuture<?> run(final Runnable combiner, Executor executor) {
       return call(
@@ -776,7 +792,6 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    *
    * @since 15.0
    */
-  @Beta
   public static <V extends @Nullable Object> ListenableFuture<V> nonCancellationPropagating(
       ListenableFuture<V> future) {
     if (future.isDone()) {
@@ -840,22 +855,22 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    * @return a future that provides a list of the results of the component futures
    * @since 10.0
    */
-  /*
-   * Another way to express this signature would be to bound <V> by @NonNull and accept LF<? extends
-   * @Nullable V>. That might be better: There's currently no difference between the outputs users
-   * get when calling this with <Foo> and calling it with <@Nullable Foo>. The only difference is
-   * that calling it with <Foo> won't work when an input Future has a @Nullable type. So why even
-   * make that error possible by giving callers the choice?
-   *
-   * On the other hand, the current signature is consistent with the similar allAsList method. And
-   * eventually this method may go away entirely in favor of an API like
-   * whenAllComplete().collectSuccesses(). That API would have a signature more like the current
-   * one.
-   */
   @Beta
   @SafeVarargs
   public static <V extends @Nullable Object> ListenableFuture<List<@Nullable V>> successfulAsList(
       ListenableFuture<? extends V>... futures) {
+    /*
+     * Another way to express this signature would be to bound <V> by @NonNull and accept
+     * LF<? extends @Nullable V>. That might be better: There's currently no difference between the
+     * outputs users get when calling this with <Foo> and calling it with <@Nullable Foo>. The only
+     * difference is that calling it with <Foo> won't work when an input Future has a @Nullable
+     * type. So why even make that error possible by giving callers the choice?
+     *
+     * On the other hand, the current signature is consistent with the similar allAsList method. And
+     * eventually this method may go away entirely in favor of an API like
+     * whenAllComplete().collectSuccesses(). That API would have a signature more like the current
+     * one.
+     */
     return new ListFuture<V>(ImmutableList.copyOf(futures), false);
   }
 
@@ -904,7 +919,6 @@ public final class Futures extends GwtFuturesCatchingSpecialization {
    *
    * @since 17.0
    */
-  @Beta
   public static <T extends @Nullable Object> ImmutableList<ListenableFuture<T>> inCompletionOrder(
       Iterable<? extends ListenableFuture<? extends T>> futures) {
     ListenableFuture<? extends T>[] copy = gwtCompatibleToArray(futures);
