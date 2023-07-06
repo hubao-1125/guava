@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.CollectPreconditions.checkRemove;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Function;
@@ -37,6 +36,7 @@ import java.util.Queue;
 import java.util.RandomAccess;
 import java.util.Set;
 import javax.annotation.CheckForNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -324,12 +324,8 @@ public final class Iterables {
    * @return a newly-allocated array into which all the elements of the iterable have been copied
    */
   @GwtIncompatible // Array.newInstance(Class, int)
-  /*
-   * If we could express Class<@Nonnull T>, we could generalize the type parameter to <T extends
-   * @Nullable Object>, and then we could accept an Iterable<? extends T> and return a plain T[]
-   * instead of a @Nullable T[].
-   */
-  public static <T> @Nullable T[] toArray(Iterable<? extends @Nullable T> iterable, Class<T> type) {
+  public static <T extends @Nullable Object> T[] toArray(
+      Iterable<? extends T> iterable, Class<@NonNull T> type) {
     return toArray(iterable, ObjectArrays.newArray(type, 0));
   }
 
@@ -987,10 +983,13 @@ public final class Iterables {
    * Returns a view of the supplied iterable that wraps each generated {@link Iterator} through
    * {@link Iterators#consumingIterator(Iterator)}.
    *
-   * <p>Note: If {@code iterable} is a {@link Queue}, the returned iterable will get entries from
-   * {@link Queue#remove()} since {@link Queue}'s iteration order is undefined. Calling {@link
-   * Iterator#hasNext()} on a generated iterator from the returned iterable may cause an item to be
-   * immediately dequeued for return on a subsequent call to {@link Iterator#next()}.
+   * <p>Note: If {@code iterable} is a {@link Queue}, the returned iterable will instead use {@link
+   * Queue#isEmpty} and {@link Queue#remove()}, since {@link Queue}'s iteration order is undefined.
+   * Calling {@link Iterator#hasNext()} on a generated iterator from the returned iterable may cause
+   * an item to be immediately dequeued for return on a subsequent call to {@link Iterator#next()}.
+   *
+   * <p>Whether the input {@code iterable} is a {@link Queue} or not, the returned {@code Iterable}
+   * is not thread-safe.
    *
    * @param iterable the iterable to wrap
    * @return a view of the supplied iterable that wraps each generated iterator through {@link
@@ -1050,7 +1049,6 @@ public final class Iterables {
    *
    * @since 11.0
    */
-  @Beta
   public static <T extends @Nullable Object> Iterable<T> mergeSorted(
       final Iterable<? extends Iterable<? extends T>> iterables,
       final Comparator<? super T> comparator) {
@@ -1061,21 +1059,9 @@ public final class Iterables {
           @Override
           public Iterator<T> iterator() {
             return Iterators.mergeSorted(
-                Iterables.transform(iterables, Iterables.<T>toIterator()), comparator);
+                Iterables.transform(iterables, Iterable::iterator), comparator);
           }
         };
     return new UnmodifiableIterable<>(iterable);
-  }
-
-  // TODO(user): Is this the best place for this? Move to fluent functions?
-  // Useful as a public method?
-  static <T extends @Nullable Object>
-      Function<Iterable<? extends T>, Iterator<? extends T>> toIterator() {
-    return new Function<Iterable<? extends T>, Iterator<? extends T>>() {
-      @Override
-      public Iterator<? extends T> apply(Iterable<? extends T> iterable) {
-        return iterable.iterator();
-      }
-    };
   }
 }

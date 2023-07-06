@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkElementIndex;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkPositionIndexes;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.base.Converter;
 import java.io.Serializable;
@@ -236,7 +235,6 @@ public final class Longs {
    * @throws IllegalArgumentException if {@code min > max}
    * @since 21.0
    */
-  @Beta
   public static long constrainToRange(long value, long min, long max) {
     checkArgument(min <= max, "min (%s) must be less than or equal to max (%s)", min, max);
     return Math.min(Math.max(value, min), max);
@@ -248,19 +246,29 @@ public final class Longs {
    *
    * @param arrays zero or more {@code long} arrays
    * @return a single array containing all the values from the source arrays, in order
+   * @throws IllegalArgumentException if the total number of elements in {@code arrays} does not fit
+   *     in an {@code int}
    */
   public static long[] concat(long[]... arrays) {
-    int length = 0;
+    long length = 0;
     for (long[] array : arrays) {
       length += array.length;
     }
-    long[] result = new long[length];
+    long[] result = new long[checkNoOverflow(length)];
     int pos = 0;
     for (long[] array : arrays) {
       System.arraycopy(array, 0, result, pos, array.length);
       pos += array.length;
     }
     return result;
+  }
+
+  private static int checkNoOverflow(long result) {
+    checkArgument(
+        result == (int) result,
+        "the total number of elements (%s) in the arrays must fit in an int",
+        result);
+    return (int) result;
   }
 
   /**
@@ -363,7 +371,6 @@ public final class Longs {
    * @throws NullPointerException if {@code string} is {@code null}
    * @since 14.0
    */
-  @Beta
   @CheckForNull
   public static Long tryParse(String string) {
     return tryParse(string, 10);
@@ -380,7 +387,7 @@ public final class Longs {
    * <p>Note that strings prefixed with ASCII {@code '+'} are rejected, even under JDK 7, despite
    * the change to {@link Long#parseLong(String, int)} for that version.
    *
-   * @param string the string representation of an long value
+   * @param string the string representation of a long value
    * @param radix the radix to use when parsing
    * @return the long value represented by {@code string} using {@code radix}, or {@code null} if
    *     {@code string} has a length of zero or cannot be parsed as a long value
@@ -389,7 +396,6 @@ public final class Longs {
    * @throws NullPointerException if {@code string} is {@code null}
    * @since 19.0
    */
-  @Beta
   @CheckForNull
   public static Long tryParse(String string, int radix) {
     if (checkNotNull(string).isEmpty()) {
@@ -469,7 +475,6 @@ public final class Longs {
    *
    * @since 16.0
    */
-  @Beta
   public static Converter<String, Long> stringConverter() {
     return LongConverter.INSTANCE;
   }
@@ -616,7 +621,7 @@ public final class Longs {
    *
    * <p>The provided "distance" may be negative, which will rotate left.
    *
-   * @since NEXT
+   * @since 32.0.0
    */
   public static void rotate(long[] array, int distance) {
     rotate(array, distance, 0, array.length);
@@ -632,7 +637,7 @@ public final class Longs {
    *
    * @throws IndexOutOfBoundsException if {@code fromIndex < 0}, {@code toIndex > array.length}, or
    *     {@code toIndex > fromIndex}
-   * @since NEXT
+   * @since 32.0.0
    */
   public static void rotate(long[] array, int distance, int fromIndex, int toIndex) {
     // See Ints.rotate for more details about possible algorithms here.
@@ -694,6 +699,8 @@ public final class Longs {
    * <p>The returned list maintains the values, but not the identities, of {@code Long} objects
    * written to or read from it. For example, whether {@code list.get(0) == list.get(0)} is true for
    * the returned list is unspecified.
+   *
+   * <p>The returned list is serializable.
    *
    * <p><b>Note:</b> when possible, you should represent your data as an {@link ImmutableLongArray}
    * instead, which has an {@link ImmutableLongArray#asList asList} view.

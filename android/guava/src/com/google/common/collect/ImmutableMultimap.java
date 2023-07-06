@@ -21,9 +21,9 @@ import static com.google.common.collect.CollectPreconditions.checkEntryNotNull;
 import static com.google.common.collect.Maps.immutableEntry;
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.GwtIncompatible;
+import com.google.common.annotations.J2ktIncompatible;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.DoNotCall;
 import com.google.errorprone.annotations.DoNotMock;
@@ -193,7 +193,6 @@ public abstract class ImmutableMultimap<K, V> extends BaseImmutableMultimap<K, V
      * @since 19.0
      */
     @CanIgnoreReturnValue
-    @Beta
     public Builder<K, V> putAll(Iterable<? extends Entry<? extends K, ? extends V>> entries) {
       for (Entry<? extends K, ? extends V> entry : entries) {
         put(entry);
@@ -331,7 +330,6 @@ public abstract class ImmutableMultimap<K, V> extends BaseImmutableMultimap<K, V
    * @throws NullPointerException if any key, value, or entry is null
    * @since 19.0
    */
-  @Beta
   public static <K, V> ImmutableMultimap<K, V> copyOf(
       Iterable<? extends Entry<? extends K, ? extends V>> entries) {
     return ImmutableListMultimap.copyOf(entries);
@@ -344,6 +342,7 @@ public abstract class ImmutableMultimap<K, V> extends BaseImmutableMultimap<K, V
   // holder class makes sure they are not initialized unless an instance is
   // deserialized.
   @GwtIncompatible // java serialization is not supported
+  @J2ktIncompatible
   static class FieldSettersHolder {
     static final Serialization.FieldSetter<ImmutableMultimap> MAP_FIELD_SETTER =
         Serialization.getFieldSetter(ImmutableMultimap.class, "map");
@@ -660,18 +659,21 @@ public abstract class ImmutableMultimap<K, V> extends BaseImmutableMultimap<K, V
     }
 
     @GwtIncompatible
+    @J2ktIncompatible
     @Override
     Object writeReplace() {
       return new KeysSerializedForm(ImmutableMultimap.this);
     }
 
     @GwtIncompatible
+    @J2ktIncompatible
     private void readObject(ObjectInputStream stream) throws InvalidObjectException {
       throw new InvalidObjectException("Use KeysSerializedForm");
     }
   }
 
   @GwtIncompatible
+  @J2ktIncompatible
   private static final class KeysSerializedForm implements Serializable {
     final ImmutableMultimap<?, ?> multimap;
 
@@ -755,8 +757,10 @@ public abstract class ImmutableMultimap<K, V> extends BaseImmutableMultimap<K, V
       return true;
     }
 
+    @J2ktIncompatible // serialization
     private static final long serialVersionUID = 0;
   }
 
+  @J2ktIncompatible // serialization
   private static final long serialVersionUID = 0;
 }

@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkElementIndex;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkPositionIndexes;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Converter;
@@ -269,7 +268,6 @@ public final class Ints extends IntsMethodsForWeb {
    * @throws IllegalArgumentException if {@code min > max}
    * @since 21.0
    */
-  @Beta
   public static int constrainToRange(int value, int min, int max) {
     checkArgument(min <= max, "min (%s) must be less than or equal to max (%s)", min, max);
     return Math.min(Math.max(value, min), max);
@@ -374,7 +372,6 @@ public final class Ints extends IntsMethodsForWeb {
    *
    * @since 16.0
    */
-  @Beta
   public static Converter<String, Integer> stringConverter() {
     return IntConverter.INSTANCE;
   }
@@ -520,7 +517,7 @@ public final class Ints extends IntsMethodsForWeb {
    *
    * <p>The provided "distance" may be negative, which will rotate left.
    *
-   * @since NEXT
+   * @since 32.0.0
    */
   public static void rotate(int[] array, int distance) {
     rotate(array, distance, 0, array.length);
@@ -536,7 +533,7 @@ public final class Ints extends IntsMethodsForWeb {
    *
    * @throws IndexOutOfBoundsException if {@code fromIndex < 0}, {@code toIndex > array.length}, or
    *     {@code toIndex > fromIndex}
-   * @since NEXT
+   * @since 32.0.0
    */
   public static void rotate(int[] array, int distance, int fromIndex, int toIndex) {
     // There are several well-known algorithms for rotating part of an array (or, equivalently,
@@ -624,6 +621,8 @@ public final class Ints extends IntsMethodsForWeb {
    * <p>The returned list maintains the values, but not the identities, of {@code Integer} objects
    * written to or read from it. For example, whether {@code list.get(0) == list.get(0)} is true for
    * the returned list is unspecified.
+   *
+   * <p>The returned list is serializable.
    *
    * <p><b>Note:</b> when possible, you should represent your data as an {@link ImmutableIntArray}
    * instead, which has an {@link ImmutableIntArray#asList asList} view.
@@ -789,7 +788,6 @@ public final class Ints extends IntsMethodsForWeb {
    * @throws NullPointerException if {@code string} is {@code null}
    * @since 11.0
    */
-  @Beta
   @CheckForNull
   public static Integer tryParse(String string) {
     return tryParse(string, 10);
@@ -815,7 +813,6 @@ public final class Ints extends IntsMethodsForWeb {
    * @throws NullPointerException if {@code string} is {@code null}
    * @since 19.0
    */
-  @Beta
   @CheckForNull
   public static Integer tryParse(String string, int radix) {
     Long result = Longs.tryParse(string, radix);

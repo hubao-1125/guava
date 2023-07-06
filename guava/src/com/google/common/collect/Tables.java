@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.NullnessCasts.uncheckedCastNullableTToT;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -67,7 +66,6 @@ public final class Tables {
    *
    * @since 21.0
    */
-  @Beta
   public static <
           T extends @Nullable Object,
           R extends @Nullable Object,
@@ -317,7 +315,7 @@ public final class Tables {
     }
 
     // Will cast TRANSPOSE_CELL to a type that always succeeds
-    private static final Function<Cell<?, ?, ?>, Cell<?, ?, ?>> TRANSPOSE_CELL =
+    private static final Function TRANSPOSE_CELL =
         new Function<Cell<?, ?, ?>, Cell<?, ?, ?>>() {
           @Override
           public Cell<?, ?, ?> apply(Cell<?, ?, ?> cell) {
@@ -328,13 +326,16 @@ public final class Tables {
     @SuppressWarnings("unchecked")
     @Override
     Iterator<Cell<C, R, V>> cellIterator() {
-      return Iterators.transform(original.cellSet().iterator(), (Function) TRANSPOSE_CELL);
+      return Iterators.transform(
+          original.cellSet().iterator(), (Function<Cell<R, C, V>, Cell<C, R, V>>) TRANSPOSE_CELL);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     Spliterator<Cell<C, R, V>> cellSpliterator() {
-      return CollectSpliterators.map(original.cellSet().spliterator(), (Function) TRANSPOSE_CELL);
+      return CollectSpliterators.map(
+          original.cellSet().spliterator(),
+          (Function<Cell<R, C, V>, Cell<C, R, V>>) TRANSPOSE_CELL);
     }
   }
 
@@ -376,7 +377,6 @@ public final class Tables {
    * @throws IllegalArgumentException if {@code backingMap} is not empty
    * @since 10.0
    */
-  @Beta
   public static <R, C, V> Table<R, C, V> newCustomTable(
       Map<R, Map<C, V>> backingMap, Supplier<? extends Map<C, V>> factory) {
     checkArgument(backingMap.isEmpty());
@@ -406,7 +406,6 @@ public final class Tables {
    *
    * @since 10.0
    */
-  @Beta
   public static <
           R extends @Nullable Object,
           C extends @Nullable Object,
@@ -664,7 +663,6 @@ public final class Tables {
    * @return an unmodifiable view of the specified table
    * @since 11.0
    */
-  @Beta
   public static <R extends @Nullable Object, C extends @Nullable Object, V extends @Nullable Object>
       RowSortedTable<R, C, V> unmodifiableRowSortedTable(
           RowSortedTable<R, ? extends C, ? extends V> table) {

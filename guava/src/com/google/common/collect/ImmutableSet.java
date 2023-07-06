@@ -21,8 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.CollectPreconditions.checkNonnegative;
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.J2ktIncompatible;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.math.IntMath;
 import com.google.common.primitives.Ints;
@@ -406,6 +406,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
    * static factories. This is necessary to ensure that the existence of a
    * particular implementation type is an implementation detail.
    */
+  @J2ktIncompatible // serialization
   private static class SerializedForm implements Serializable {
     final Object[] elements;
 
@@ -421,10 +422,12 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
   }
 
   @Override
+  @J2ktIncompatible // serialization
   Object writeReplace() {
     return new SerializedForm(toArray());
   }
 
+  @J2ktIncompatible // serialization
   private void readObject(ObjectInputStream stream) throws InvalidObjectException {
     throw new InvalidObjectException("Use SerializedForm");
   }
@@ -449,7 +452,6 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
    *
    * @since 23.1
    */
-  @Beta
   public static <E> Builder<E> builderWithExpectedSize(int expectedSize) {
     checkNonnegative(expectedSize, "expectedSize");
     return new Builder<E>(expectedSize);
@@ -724,7 +726,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
    */
   private static final class RegularSetBuilderImpl<E> extends SetBuilderImpl<E> {
     // null until at least two elements are present
-    private @Nullable Object @Nullable [] hashTable;
+    @CheckForNull private @Nullable Object[] hashTable;
     private int maxRunBeforeFallback;
     private int expandTableThreshold;
     private int hashCode;
@@ -864,7 +866,7 @@ public abstract class ImmutableSet<E> extends ImmutableCollection<E> implements 
 
     /**
      * We attempt to detect deliberate hash flooding attempts. If one is detected, we fall back to a
-     * wrapper around j.u.HashSet, which has built in flooding protection. MAX_RUN_MULTIPLIER was
+     * wrapper around j.u.HashSet, which has built-in flooding protection. MAX_RUN_MULTIPLIER was
      * determined experimentally to match our desired probability of false positives.
      */
     // NB: yes, this is surprisingly high, but that's what the experiments said was necessary

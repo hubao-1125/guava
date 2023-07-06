@@ -18,6 +18,9 @@ package com.google.common.primitives;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
+import com.google.common.annotations.J2ktIncompatible;
 import com.google.common.testing.NullPointerTester;
 import java.util.Set;
 import junit.framework.TestCase;
@@ -27,6 +30,7 @@ import junit.framework.TestCase;
  *
  * @author Kevin Bourrillion
  */
+@GwtCompatible(emulated = true)
 public class PrimitivesTest extends TestCase {
   public void testIsWrapperType() {
     assertThat(Primitives.isWrapperType(Void.class)).isTrue();
@@ -87,6 +91,8 @@ public class PrimitivesTest extends TestCase {
     }
   }
 
+  @GwtIncompatible
+  @J2ktIncompatible
   public void testNullPointerExceptions() {
     NullPointerTester tester = new NullPointerTester();
     tester.testAllPublicStaticMethods(Primitives.class);

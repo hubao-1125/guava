@@ -22,6 +22,7 @@ import static com.google.common.collect.NullnessCasts.uncheckedCastNullableTToT;
 
 import com.google.common.annotations.GwtCompatible;
 import com.google.common.base.Objects;
+import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.CheckForNull;
@@ -122,12 +123,14 @@ final class GeneralRange<T extends @Nullable Object> implements Serializable {
      * whenever they pass `true` for the matching `has*Bound` parameter.
      */
     if (hasLowerBound) {
-      comparator.compare(
-          uncheckedCastNullableTToT(lowerEndpoint), uncheckedCastNullableTToT(lowerEndpoint));
+      int unused =
+          comparator.compare(
+              uncheckedCastNullableTToT(lowerEndpoint), uncheckedCastNullableTToT(lowerEndpoint));
     }
     if (hasUpperBound) {
-      comparator.compare(
-          uncheckedCastNullableTToT(upperEndpoint), uncheckedCastNullableTToT(upperEndpoint));
+      int unused =
+          comparator.compare(
+              uncheckedCastNullableTToT(upperEndpoint), uncheckedCastNullableTToT(upperEndpoint));
     }
 
     if (hasLowerBound && hasUpperBound) {
@@ -261,7 +264,7 @@ final class GeneralRange<T extends @Nullable Object> implements Serializable {
         getUpperBoundType());
   }
 
-  @CheckForNull private transient GeneralRange<T> reverse;
+  @LazyInit @CheckForNull private transient GeneralRange<T> reverse;
 
   /** Returns the same range relative to the reversed comparator. */
   GeneralRange<T> reverse() {
